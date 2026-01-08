@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smooth Porsche 3D</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;  /* no scrollbars */
+    height: 100%;
+    width: 100%;
+    background: transparent;
+  }
+  #three-container {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<div id="three-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+
+<script>
+const container = document.getElementById("three-container");
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+camera.position.set(0, 1, 5);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
+
+// LIGHTING
+const ambient = new THREE.AmbientLight(0xffffff, 1.5);
+scene.add(ambient);
+const dir = new THREE.DirectionalLight(0xffffff, 2);
+dir.position.set(10, 15, 10);
+scene.add(dir);
+
+// LOAD MODEL
+const loader = new THREE.GLTFLoader();
+loader.load(
+  "https://souprah11.github.io/3d-models/SmoothPorsche.glb",
+  function(gltf){
+    const model = gltf.scene;
+
+    // CENTER MODEL
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    model.position.sub(center);
+
+    // SCALE MODEL
+    const size = box.getSize(new THREE.Vector3()).length();
+    const scale = 5 / size; // change this to make car bigger/smaller
+    model.scale.setScalar(scale);
+
+    scene.add(model);
+
+    // ANIMATE
+    function animate(){
+      requestAnimationFrame(animate);
+      model.rotation.y += 0.005;  // spin
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // OPTIONAL: scroll-based movement
+    // window.addEventListener("scroll", () => {
+    //   const scroll = window.scrollY / window.innerHeight;
+    //   model.position.y = scroll * 2;
+    // });
+  },
+  undefined,
+  function(error){
+    console.error("GLB load error:", error);
+  }
+);
+
+// HANDLE RESIZE
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
