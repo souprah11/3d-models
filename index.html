@@ -7,9 +7,9 @@
   html, body {
     margin: 0;
     padding: 0;
-    overflow: hidden;  /* no scrollbars */
-    height: 100%;
+    overflow: hidden;
     width: 100%;
+    height: 100%;
     background: transparent;
   }
   #three-container {
@@ -28,26 +28,30 @@
 <script>
 const container = document.getElementById("three-container");
 
+// SCENE
 const scene = new THREE.Scene();
+
+// CAMERA
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
 camera.position.set(0, 1, 5);
 
+// RENDERER
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 container.appendChild(renderer.domElement);
 
-// LIGHTING
+// LIGHTS
 const ambient = new THREE.AmbientLight(0xffffff, 1.5);
 scene.add(ambient);
 const dir = new THREE.DirectionalLight(0xffffff, 2);
 dir.position.set(10, 15, 10);
 scene.add(dir);
 
-// LOAD MODEL
+// LOAD MODEL via raw.githack (CORS-friendly)
 const loader = new THREE.GLTFLoader();
 loader.load(
-  "https://souprah11.github.io/3d-models/SmoothPorsche.glb",
+  "https://rawcdn.githack.com/souprah11/3d-models/main/SmoothPorsche.glb",
   function(gltf){
     const model = gltf.scene;
 
@@ -56,26 +60,20 @@ loader.load(
     const center = box.getCenter(new THREE.Vector3());
     model.position.sub(center);
 
-    // SCALE MODEL
+    // SCALE MODEL dynamically
     const size = box.getSize(new THREE.Vector3()).length();
-    const scale = 5 / size; // change this to make car bigger/smaller
+    const scale = window.innerHeight / (size * 2);  // auto-fit to screen height
     model.scale.setScalar(scale);
 
     scene.add(model);
 
-    // ANIMATE
+    // ANIMATE MODEL
     function animate(){
       requestAnimationFrame(animate);
       model.rotation.y += 0.005;  // spin
       renderer.render(scene, camera);
     }
     animate();
-
-    // OPTIONAL: scroll-based movement
-    // window.addEventListener("scroll", () => {
-    //   const scroll = window.scrollY / window.innerHeight;
-    //   model.position.y = scroll * 2;
-    // });
   },
   undefined,
   function(error){
